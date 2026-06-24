@@ -1,8 +1,7 @@
 pub struct Matrix {
     pub rows: usize,
     pub cols: usize,
-    // Alternatively, use a 1d array and update the at function.
-    pub array: Vec<Vec<f32>>,
+    pub array: Vec<f64>,
 }
 
 impl Matrix {
@@ -10,20 +9,29 @@ impl Matrix {
         Matrix {
             rows,
             cols,
-            array: vec![vec![0.0; cols]; rows],
+            array: vec![0.0; rows * cols],
         }
     }
 
-    pub fn from_array(array: Vec<Vec<f32>>) -> Matrix {
+    pub fn from_array(data: &[f64], rows: usize, cols: usize) -> Matrix {
         Matrix {
-            rows: array.len(),
-            cols: array[0].len(),
-            array,
+            rows,
+            cols,
+            array: data.to_owned(),
         }
     }
 
-    pub fn at(&self, row: usize, col: usize) -> f32 {
-        self.array[row][col]
+    fn index(&self, row: usize, col: usize) -> usize {
+        row * self.cols + col
+    }
+
+    pub fn at(&self, row: usize, col: usize) -> f64 {
+        self.array[self.index(row, col)]
+    }
+
+    pub fn at_mut(&mut self, row: usize, col: usize) -> &mut f64 {
+        let index = self.index(row, col);
+        &mut self.array[index]
     }
 
     pub fn print(&self) {
@@ -31,8 +39,8 @@ impl Matrix {
             for c in 0..self.cols {
                 print!("{}\t", self.at(r, c));
             }
-        println!();
-    }
+            println!();
+        }
     }
 
     pub fn multiply(m1: &Matrix, m2: &Matrix) -> Result<Matrix, String> {
@@ -47,7 +55,7 @@ impl Matrix {
         for row in 0..m1.rows {
             for col in 0..m2.cols {
                 for i in 0..m1.cols {
-                    product.array[row][col] += m1.at(row, i) * m2.at(i, col);
+                    *product.at_mut(row, col) += m1.at(row, i) * m2.at(i, col);
                 }
             }
         }
@@ -65,7 +73,7 @@ impl Matrix {
         let mut product = Self::zeros(m1.rows, m1.cols);
         for row in 0..m1.rows {
             for col in 0..m1.cols {
-                product.array[row][col] = m1.at(row, col) * m2.at(row, col);
+                *product.at_mut(row, col) = m1.at(row, col) * m2.at(row, col);
             }
         }
         Ok(product)
