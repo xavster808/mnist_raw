@@ -105,3 +105,13 @@ fn test_component_operation() {
     let transformed = matrix.component_operation(|value| value + 1.0);
     assert_matrix_eq(&transformed, &[2.0, 3.0, 4.0, 5.0], 2, 2);
 }
+
+#[test]
+fn test_from_columns() {
+    let col1 = Matrix::from_array(&[1.0, 2.0], 2, 1).unwrap();
+    let col2 = Matrix::from_array(&[3.0, 4.0], 2, 1).unwrap();
+    let col3 = Matrix::from_array(&[5.0, 6.0], 2, 1).unwrap();
+    let col4 = Matrix::from_array(&[7.0, 8.0], 2, 1).unwrap();
+    let matrix = Matrix::from_columns(&[col1, col2, col3, col4]).unwrap();
+    assert_matrix_eq(&matrix, &[1.0, 3.0, 5.0, 7.0, 2.0, 4.0, 6.0, 8.0], 2, 4);
+}

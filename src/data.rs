@@ -5,6 +5,8 @@ use super::lin_alg::Matrix;
 
 const MNIST_IMAGES_MAGIC_NUMBER: u32 = 0x00000803; // unsigned u8, 3 fields = 2051
 const MNIST_LABELS_MAGIC_NUMBER: u32 = 0x00000801; // unsigned u8, 1 field = 2049
+
+#[derive(Clone)]
 pub struct Image {
     pub pixels: Matrix,
 }
@@ -34,12 +36,18 @@ impl Image {
 }
 
 pub struct Label {
-    num: u8,
+    pub num: u8,
 }
 
 impl Label {
     pub fn display_label(&self) {
         print!("{}", self.num);
+    }
+
+    pub fn to_onehot(&self) -> Matrix {
+        let mut column = Matrix::zeros(10, 1);
+        *column.at_mut(self.num as usize, 0) = 1.0;
+        column
     }
 }
 

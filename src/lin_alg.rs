@@ -64,7 +64,7 @@ impl Matrix {
     pub fn multiply(&self, m2: &Matrix) -> Result<Matrix, String> {
         if self.cols != m2.rows {
             return Err(format!(
-                "Bad dimensions: ({}, {}) * ({}, {})", 
+                "Bad dimensions: ({}, {}) x ({}, {})", 
                 self.rows, self.cols, m2.rows, m2.cols
             ));
         }
@@ -94,7 +94,7 @@ impl Matrix {
     pub fn add(&self, m2: &Matrix) -> Result<Matrix, String> {
         if (self.rows != m2.rows) || (m2.cols != 1) && (m2.cols != self.cols) {
             return Err(format!(
-                "Bad dimensions: ({}, {}) * ({}, {})", 
+                "Bad dimensions: ({}, {}) + ({}, {})", 
                 self.rows, self.cols, m2.rows, m2.cols
             ));
         }
@@ -120,7 +120,7 @@ impl Matrix {
     pub fn subtract(&self, m2: &Matrix) -> Result<Matrix, String> {
         if (self.rows, self.cols) != (m2.rows, m2.cols) {
             return Err(format!(
-                "Bad dimensions: ({}, {}) * ({}, {})", 
+                "Bad dimensions: ({}, {}) - ({}, {})", 
                 self.rows, self.cols, m2.rows, m2.cols
             ));
         }
@@ -164,6 +164,37 @@ impl Matrix {
                 .map(|&f| operation(f))
                 .collect(),
             ..*self
+        }
+    }
+
+    pub fn from_columns(columns: &[Matrix]) -> Result<Matrix, String> {
+        if columns.is_empty() {
+            return Err("No columns".into())
+        }
+        let rows = columns[0].rows;
+        if columns.iter().any(|c| c.rows != rows) {
+            return Err("Columns aren't the same length".into())
+        }
+        let cols = columns.len();
+
+        let mut array = Vec::with_capacity(rows * cols);
+        for row in 0..rows {
+            for col in columns {
+                array.push(col.array[row]);
+            }
+        }
+        Ok(Matrix {
+            rows,
+            cols,
+            array,
+        })
+    }
+
+    pub fn sum_along_rows(&self) -> Matrix {
+        Matrix {
+            rows: self.rows,
+            cols: 1,
+            array: self.array.chunks(self.cols).map(|c| c.iter().sum()).collect(),
         }
     }
 }
