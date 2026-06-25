@@ -6,7 +6,7 @@ use super::lin_alg::Matrix;
 const MNIST_IMAGES_MAGIC_NUMBER: u32 = 0x00000803; // unsigned u8, 3 fields = 2051
 const MNIST_LABELS_MAGIC_NUMBER: u32 = 0x00000801; // unsigned u8, 1 field = 2049
 pub struct Image {
-    pixels: Matrix,
+    pub pixels: Matrix,
 }
 
 impl Image {
@@ -36,6 +36,7 @@ impl Image {
 pub struct Label {
     num: u8,
 }
+
 impl Label {
     pub fn display_label(&self) {
         print!("{}", self.num);
@@ -73,7 +74,7 @@ pub fn image_reader(data_path: &Path) -> Result<Vec<Image>, Box<dyn std::error::
             .collect();
         
         images.push( Image {
-            pixels: Matrix::from_array(&normalized, num_rows, num_cols)
+            pixels: Matrix::from_array(&normalized, num_rows, num_cols)?,
         });
     }
 
