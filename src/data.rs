@@ -76,9 +76,9 @@ pub fn image_reader(data_path: &Path) -> Result<Vec<Image>, Box<dyn std::error::
     for _ in 0..num_images {
         let mut pixels = vec![0u8; num_rows * num_cols];
         data_file.read_exact(&mut pixels)?;
-        let normalized: Vec<f64> = pixels
+        let normalized: Vec<f32> = pixels
             .iter()
-            .map(|&p| (p as f64) / 255.0)
+            .map(|&p| (p as f32) / 255.0)
             .collect();
         
         images.push( Image {

@@ -1,6 +1,6 @@
 use super::lin_alg::*;
 
-fn assert_matrix_eq(matrix: &Matrix, expected: &[f64], rows: usize, cols: usize) {
+fn assert_matrix_eq(matrix: &Matrix, expected: &[f32], rows: usize, cols: usize) {
     assert_eq!(matrix.rows, rows);
     assert_eq!(matrix.cols, cols);
     assert_eq!(matrix.array, expected);

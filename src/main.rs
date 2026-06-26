@@ -22,6 +22,7 @@ fn main() {
     let train_images: Vec<Image> = image_reader(Path::new(TRAIN_IMAGES)).unwrap();
     let train_labels: Vec<Label> = label_reader(Path::new(TRAIN_LABELS)).unwrap();
 
-    let mut model = Model::new(&[28*28, 16, 16, 10]);
+    let mut model = Model::new(&[28 * 28 , 128, 64, 10]);
+
     train(&mut model, train_images, train_labels, test_images, test_labels);
 }

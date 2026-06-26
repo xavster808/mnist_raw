@@ -2,7 +2,7 @@
 pub struct Matrix {
     pub rows: usize,
     pub cols: usize,
-    pub array: Vec<f64>,
+    pub array: Vec<f32>,
 }
 
 impl Matrix {
@@ -14,7 +14,7 @@ impl Matrix {
         }
     }
 
-    pub fn from_array(data: &[f64], rows: usize, cols: usize) -> Result<Matrix, Box<dyn std::error::Error>> {
+    pub fn from_array(data: &[f32], rows: usize, cols: usize) -> Result<Matrix, Box<dyn std::error::Error>> {
         if data.len() != rows * cols {
             return Err("Bad data size".into())
         };
@@ -29,11 +29,15 @@ impl Matrix {
         row * self.cols + col
     }
 
-    pub fn at(&self, row: usize, col: usize) -> f64 {
+    pub fn size(&self) -> (usize, usize) {
+        (self.rows, self.cols)
+    }
+
+    pub fn at(&self, row: usize, col: usize) -> f32 {
         self.array[self.index(row, col)]
     }
 
-    pub fn at_mut(&mut self, row: usize, col: usize) -> &mut f64 {
+    pub fn at_mut(&mut self, row: usize, col: usize) -> &mut f32 {
         let index = self.index(row, col);
         &mut self.array[index]
     }
@@ -48,7 +52,7 @@ impl Matrix {
     }
 
     pub fn transpose(&self) -> Matrix {
-        let mut new_array: Vec<f64> = vec![0.0; self.array.len()];
+        let mut new_array: Vec<f32> = vec![0.0; self.array.len()];
         for row in 0..self.rows {
             for col in 0..self.cols {
                 new_array[col * self.rows + row] = self.at(row, col);
@@ -71,8 +75,8 @@ impl Matrix {
         let mut product = Self::zeros(self.rows, m2.cols);
         
         for row in 0..self.rows {
-            for col in 0..m2.cols {
-                for i in 0..self.cols {
+            for i in 0..self.cols {
+                for col in 0..m2.cols {
                     *product.at_mut(row, col) += self.at(row, i) * m2.at(i, col);
                 }
             }
@@ -81,7 +85,7 @@ impl Matrix {
         Ok(product)
     }
 
-    pub fn scale(&self, scalar: f64) -> Matrix {
+    pub fn scale(&self, scalar: f32) -> Matrix {
         Matrix {
             array: self.array
                 .iter()
@@ -142,7 +146,7 @@ impl Matrix {
                 self.rows, self.cols, m2.rows, m2.cols
             ));
         }
-        let product: Vec<f64> = self.array
+        let product: Vec<f32> = self.array
             .iter()
             .zip(&m2.array)
             .map(|(a, &b)| a * b)
@@ -157,7 +161,7 @@ impl Matrix {
         self.multiply(&m2.transpose())    
     }
 
-    pub fn component_operation(&self, operation: impl Fn(f64) -> f64) -> Matrix {
+    pub fn component_operation(&self, operation: impl Fn(f32) -> f32) -> Matrix {
         Matrix {
             array: self.array
                 .iter()

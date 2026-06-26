@@ -13,8 +13,8 @@ pub fn train(model: &mut Model, train_data: Vec<Image>, train_labels: Vec<Label>
     let epochs = 100;
     let mut rng = rand::rng();
 
-    let mut accuracy: f64;
-    let mut best_acc: f64 = 0.0;
+    let mut accuracy: f32;
+    let mut best_acc: f32 = 0.0;
 
     // Convert to matrices
     let train_data: Vec<Matrix> = train_data
@@ -29,8 +29,8 @@ pub fn train(model: &mut Model, train_data: Vec<Image>, train_labels: Vec<Label>
         .zip(train_labels)
         .collect();
 
-    for e in 0..epochs {
-        println!("Starting epoch {}", e);
+    for epoch in 0..epochs {
+        println!("Starting epoch {}", epoch);
         pairs.shuffle(&mut rng);
         for batch in pairs.chunks(batch_size) {
             let (images, labels): (Vec<Matrix>, Vec<Matrix>) = batch.iter().cloned().unzip();

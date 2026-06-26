@@ -4,7 +4,7 @@ use super::{
 };
 use rand_distr::{Distribution, Normal};
 
-    struct Layer {
+struct Layer {
     weights: Matrix,
     biases: Matrix,
 }
@@ -20,7 +20,7 @@ impl ActivationFunction for ReLU {
         x.component_operation(|a| a.max(0.0)) 
     }
     fn prime(x: &Matrix) -> Matrix { 
-        x.component_operation(|a| f64::from(a > 0.0)) 
+        x.component_operation(|a| f32::from(a > 0.0)) 
     }
 }
 
@@ -44,8 +44,8 @@ impl Model {
         let layers: Vec<Layer> = layer_sizes
             .windows(2)
             .map(|w| {
-                let normal = Normal::new(0.0, (2.0 / w[0] as f64).sqrt()).unwrap();
-                let weights: Vec<f64> = normal.sample_iter(&mut rng).take(w[0] * w[1]).collect();
+                let normal = Normal::new(0.0, (2.0 / w[0] as f32).sqrt()).unwrap();
+                let weights: Vec<f32> = normal.sample_iter(&mut rng).take(w[0] * w[1]).collect();
                 Layer {
                     weights: Matrix::from_array(&weights, w[1], w[0]).unwrap(),
                     biases: Matrix::zeros(w[1], 1),
@@ -63,7 +63,7 @@ impl Model {
         let mut current = input.clone();
 
         let mut activations = vec![current.clone()];
-        let mut preactivations = vec![]; // first entry is to align indices with 
+        let mut preactivations = vec![];
 
         for layer in &self.layers {
             current = layer.weights
@@ -82,7 +82,7 @@ impl Model {
     }
 
     // Returns accuracy on test data
-    pub fn evaluate(&self, images: &[Image], labels: &[Label]) -> f64 {
+    pub fn evaluate(&self, images: &[Image], labels: &[Label]) -> f32 {
         let image_matrix = Matrix::from_columns(&{
             images
                 .iter()
@@ -95,24 +95,25 @@ impl Model {
         max.iter()
             .zip(labels)
             .fold(0, |a, (b,  c)| a + (*b == c.num as usize) as usize)
-            as f64 / labels.len() as f64
+            as f32 / labels.len() as f32
     }
 
-    pub fn update_batch(&mut self, learning_rate: f64, batch_images: &Matrix, batch_expected: &Matrix) {
+    pub fn update_batch(&mut self, learning_rate: f32, batch_images: &Matrix, batch_expected: &Matrix) {
         let forward_pass: ForwardPass = self.feed_forward::<ReLU>(batch_images);
         // calculate gradients
         let (nabla_w, nabla_b) = self.backprop::<ReLU>(&forward_pass, batch_expected);
+
         for (i, layer) in self.layers.iter_mut().enumerate() {
             layer.weights = layer.weights.subtract(&nabla_w[i].scale(learning_rate)).unwrap();
             layer.biases = layer.biases.subtract(&nabla_b[i].scale(learning_rate)).unwrap();
-        }
+        }   
     }
 
     // Using the quadratic cost function 0.5(a - y)^2
     fn backprop<T: ActivationFunction>(&self, forward_pass: &ForwardPass,  expected_output: &Matrix) -> (Vec<Matrix>, Vec<Matrix>) {
         let mut nabla_w: Vec<Matrix> = Vec::with_capacity(self.layers.len());
         let mut nabla_b: Vec<Matrix> = Vec::with_capacity(self.layers.len());
-        let n = expected_output.cols as f64;
+        let n = expected_output.cols as f32;
 
         let ForwardPass {output, activations, preactivations} = forward_pass;
         let num_layers = self.layers.len(); // num hidden layers + output layer
@@ -126,11 +127,12 @@ impl Model {
         // the rest of the model
         // l is the offset from the end of the network
         for l in 1..num_layers {
-            error = self.layers[num_layers - l].weights
+            error = self.layers[num_layers - l].weights.transpose()
                 .multiply(&error).unwrap()
-                .hadamard(&preactivations[num_layers - 1 - l]).unwrap();
-            nabla_w.push(error.outer(&activations[activations.len() - 1 - l]).unwrap().scale(1.0 / n));
+                .hadamard(&T::prime(&preactivations[num_layers - 1 - l])).unwrap();
+            nabla_w.push(error.outer(&activations[activations.len() - l - 2]).unwrap().scale(1.0 / n));
             nabla_b.push(error.sum_along_rows().scale(1.0 / n));
+
         }
         
         (nabla_w.into_iter().rev().collect(), nabla_b.into_iter().rev().collect())
