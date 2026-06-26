@@ -197,4 +197,28 @@ impl Matrix {
             array: self.array.chunks(self.cols).map(|c| c.iter().sum()).collect(),
         }
     }
+
+    // matrix into column vector
+    pub fn flatten(&self) -> Matrix {
+        Matrix {
+            rows: self.array.len(),
+            cols: 1,
+            array: self.array.clone(),
+        }
+    }
+
+    pub fn argmax_cols(&self) -> Vec<usize> {
+        let mut max: Vec<usize> = Vec::with_capacity(self.cols);
+        for i in 0..self.cols {
+            max.push(self.array
+                .iter()
+                .skip(i)
+                .step_by(self.cols)
+                .enumerate()
+                .max_by(|(_, a), (_, b)| a.total_cmp(b))
+                .expect("Empty matrix or Nan!").0
+            );
+        }
+        max
+    }
 }

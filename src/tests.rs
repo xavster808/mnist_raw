@@ -115,3 +115,17 @@ fn test_from_columns() {
     let matrix = Matrix::from_columns(&[col1, col2, col3, col4]).unwrap();
     assert_matrix_eq(&matrix, &[1.0, 3.0, 5.0, 7.0, 2.0, 4.0, 6.0, 8.0], 2, 4);
 }
+
+#[test]
+fn test_flatten() {
+    let matrix = Matrix::from_array(&[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0], 3, 3).unwrap();
+    let flattened = matrix.flatten();
+    assert_matrix_eq(&flattened, &[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0], 9, 1);
+}
+
+#[test]
+fn test_argmax_cols() {
+    let matrix = Matrix::from_array(&[1.0, 2.0, 3.0, 4.0], 2, 2).unwrap();
+    let expected = [1, 1];
+    matrix.argmax_cols().into_iter().zip(expected).for_each(|(a, b)| assert_eq!(a, b));
+}

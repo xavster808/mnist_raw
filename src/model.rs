@@ -1,5 +1,6 @@
 use super::{
     lin_alg::Matrix,
+    data::{Image, Label}
 };
 use rand_distr::{Distribution, Normal};
 
@@ -80,9 +81,22 @@ impl Model {
         }
     }
 
-    // pub fn evaluate(&self, test_images: &Matrix, ) -> f64 {
-
-    // }
+    // Returns accuracy on test data
+    pub fn evaluate(&self, images: &[Image], labels: &[Label]) -> f64 {
+        let image_matrix = Matrix::from_columns(&{
+            images
+                .iter()
+                .map(|i| i.pixels.flatten())
+                .collect::<Vec<_>>()
+        }).unwrap();
+        let ForwardPass {output, ..} = self.feed_forward::<ReLU>(&image_matrix);
+        
+        let max = output.argmax_cols();
+        max.iter()
+            .zip(labels)
+            .fold(0, |a, (b,  c)| a + (*b == c.num as usize) as usize)
+            as f64 / labels.len() as f64
+    }
 
     pub fn update_batch(&mut self, learning_rate: f64, batch_images: &Matrix, batch_expected: &Matrix) {
         let forward_pass: ForwardPass = self.feed_forward::<ReLU>(batch_images);
