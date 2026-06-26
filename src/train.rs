@@ -13,12 +13,13 @@ pub fn train(
     test_labels: Vec<Label>,
 ) {
     let learning_rate = 0.05;
+    let lambda = 0.0; // L2 regularization parameter
     let batch_size = 100;
     let epochs = 100;
     let mut rng = rand::rng();
 
     let mut accuracy: f32;
-    let mut best_acc: f32 = 0.0;
+    let mut best_acc: f32 = 0.01;
 
     // Convert to matrices
     let train_data: Vec<Matrix> = train_data.into_iter().map(|i| i.pixels.flatten()).collect();
@@ -32,7 +33,7 @@ pub fn train(
             let (images, labels): (Vec<Matrix>, Vec<Matrix>) = batch.iter().cloned().unzip();
             let image_matrix = Matrix::from_columns(&images).unwrap();
             let label_matrix = Matrix::from_columns(&labels).unwrap();
-            model.update_batch(learning_rate, &image_matrix, &label_matrix);
+            model.update_batch(learning_rate, lambda, &image_matrix, &label_matrix);
         }
         accuracy = model.evaluate(&test_data, &test_labels);
         best_acc = best_acc.max(accuracy);

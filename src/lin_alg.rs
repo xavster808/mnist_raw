@@ -80,8 +80,9 @@ impl Matrix {
 
         for row in 0..self.rows {
             for i in 0..self.cols {
+                let val = self.at(row, i);
                 for col in 0..m2.cols {
-                    *product.at_mut(row, col) += self.at(row, i) * m2.at(i, col);
+                    *product.at_mut(row, col) += val * m2.at(i, col);
                 }
             }
         }

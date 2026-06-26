@@ -99,19 +99,26 @@ impl Model {
             / labels.len() as f32
     }
 
+    // With L2 regularization: cost function = C₀ + (λ/2)sum(w²)
+    // dC/dw becomes dC₀/dw + (λ/n)w
+    // W - αdC₀/dw becomes (1 - αλ)W - dC₀/dw
     pub fn update_batch(
         &mut self,
         learning_rate: f32,
+        lambda: f32,
         batch_images: &Matrix,
         batch_expected: &Matrix,
     ) {
         let forward_pass: ForwardPass = self.feed_forward::<ReLU>(batch_images);
         // calculate gradients
         let (nabla_w, nabla_b) = self.backprop::<ReLU>(&forward_pass, batch_expected);
+        
+        let decay_factor = 1.0 - (learning_rate * lambda);
 
         for (i, layer) in self.layers.iter_mut().enumerate() {
             layer.weights = layer
                 .weights
+                .scale(decay_factor)
                 .subtract(&nabla_w[i].scale(learning_rate))
                 .unwrap();
             layer.biases = layer
