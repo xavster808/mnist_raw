@@ -14,9 +14,13 @@ impl Matrix {
         }
     }
 
-    pub fn from_array(data: &[f32], rows: usize, cols: usize) -> Result<Matrix, Box<dyn std::error::Error>> {
+    pub fn from_array(
+        data: &[f32],
+        rows: usize,
+        cols: usize,
+    ) -> Result<Matrix, Box<dyn std::error::Error>> {
         if data.len() != rows * cols {
-            return Err("Bad data size".into())
+            return Err("Bad data size".into());
         };
         Ok(Matrix {
             rows,
@@ -68,12 +72,12 @@ impl Matrix {
     pub fn multiply(&self, m2: &Matrix) -> Result<Matrix, String> {
         if self.cols != m2.rows {
             return Err(format!(
-                "Bad dimensions: ({}, {}) x ({}, {})", 
+                "Bad dimensions: ({}, {}) x ({}, {})",
                 self.rows, self.cols, m2.rows, m2.cols
             ));
         }
         let mut product = Self::zeros(self.rows, m2.cols);
-        
+
         for row in 0..self.rows {
             for i in 0..self.cols {
                 for col in 0..m2.cols {
@@ -87,10 +91,7 @@ impl Matrix {
 
     pub fn scale(&self, scalar: f32) -> Matrix {
         Matrix {
-            array: self.array
-                .iter()
-                .map(|a| a * scalar)
-                .collect(),
+            array: self.array.iter().map(|a| a * scalar).collect(),
             ..*self
         }
     }
@@ -98,7 +99,7 @@ impl Matrix {
     pub fn add(&self, m2: &Matrix) -> Result<Matrix, String> {
         if (self.rows != m2.rows) || (m2.cols != 1) && (m2.cols != self.cols) {
             return Err(format!(
-                "Bad dimensions: ({}, {}) + ({}, {})", 
+                "Bad dimensions: ({}, {}) + ({}, {})",
                 self.rows, self.cols, m2.rows, m2.cols
             ));
         }
@@ -108,45 +109,42 @@ impl Matrix {
                 .zip(&m2.array)
                 .map(|(&a, &b)| a + b)
                 .collect()
-        } else {  // Broadcast
+        } else {
+            // Broadcast
             self.array
                 .iter()
                 .enumerate()
                 .map(|(i, a)| a + m2.array[i / self.cols])
                 .collect()
         };
-        Ok(Matrix {
-            array,
-            ..*self
-        })
+        Ok(Matrix { array, ..*self })
     }
-    
+
     pub fn subtract(&self, m2: &Matrix) -> Result<Matrix, String> {
         if (self.rows, self.cols) != (m2.rows, m2.cols) {
             return Err(format!(
-                "Bad dimensions: ({}, {}) - ({}, {})", 
+                "Bad dimensions: ({}, {}) - ({}, {})",
                 self.rows, self.cols, m2.rows, m2.cols
             ));
         }
-        let array = self.array
+        let array = self
+            .array
             .iter()
             .zip(&m2.array)
             .map(|(&a, &b)| a - b)
             .collect();
-        Ok(Matrix {
-            array,
-            ..*self
-        })
+        Ok(Matrix { array, ..*self })
     }
-    
+
     pub fn hadamard(&self, m2: &Matrix) -> Result<Matrix, String> {
         if (self.rows, self.cols) != (m2.rows, m2.cols) {
             return Err(format!(
-                "Bad dimensions: ({}, {}) * ({}, {})", 
+                "Bad dimensions: ({}, {}) * ({}, {})",
                 self.rows, self.cols, m2.rows, m2.cols
             ));
         }
-        let product: Vec<f32> = self.array
+        let product: Vec<f32> = self
+            .array
             .iter()
             .zip(&m2.array)
             .map(|(a, &b)| a * b)
@@ -158,26 +156,23 @@ impl Matrix {
     }
 
     pub fn outer(&self, m2: &Matrix) -> Result<Matrix, String> {
-        self.multiply(&m2.transpose())    
+        self.multiply(&m2.transpose())
     }
 
     pub fn component_operation(&self, operation: impl Fn(f32) -> f32) -> Matrix {
         Matrix {
-            array: self.array
-                .iter()
-                .map(|&f| operation(f))
-                .collect(),
+            array: self.array.iter().map(|&f| operation(f)).collect(),
             ..*self
         }
     }
 
     pub fn from_columns(columns: &[Matrix]) -> Result<Matrix, String> {
         if columns.is_empty() {
-            return Err("No columns".into())
+            return Err("No columns".into());
         }
         let rows = columns[0].rows;
         if columns.iter().any(|c| c.rows != rows) {
-            return Err("Columns aren't the same length".into())
+            return Err("Columns aren't the same length".into());
         }
         let cols = columns.len();
 
@@ -187,18 +182,18 @@ impl Matrix {
                 array.push(col.array[row]);
             }
         }
-        Ok(Matrix {
-            rows,
-            cols,
-            array,
-        })
+        Ok(Matrix { rows, cols, array })
     }
 
     pub fn sum_along_rows(&self) -> Matrix {
         Matrix {
             rows: self.rows,
             cols: 1,
-            array: self.array.chunks(self.cols).map(|c| c.iter().sum()).collect(),
+            array: self
+                .array
+                .chunks(self.cols)
+                .map(|c| c.iter().sum())
+                .collect(),
         }
     }
 
@@ -214,13 +209,15 @@ impl Matrix {
     pub fn argmax_cols(&self) -> Vec<usize> {
         let mut max: Vec<usize> = Vec::with_capacity(self.cols);
         for i in 0..self.cols {
-            max.push(self.array
-                .iter()
-                .skip(i)
-                .step_by(self.cols)
-                .enumerate()
-                .max_by(|(_, a), (_, b)| a.total_cmp(b))
-                .expect("Empty matrix or Nan!").0
+            max.push(
+                self.array
+                    .iter()
+                    .skip(i)
+                    .step_by(self.cols)
+                    .enumerate()
+                    .max_by(|(_, a), (_, b)| a.total_cmp(b))
+                    .expect("Empty matrix or Nan!")
+                    .0,
             );
         }
         max

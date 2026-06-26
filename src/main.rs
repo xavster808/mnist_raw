@@ -1,14 +1,14 @@
-pub mod lin_alg;
 pub mod data;
+pub mod lin_alg;
 pub mod model;
 pub mod train;
 
 #[cfg(test)]
 pub mod tests;
 
-use std::path::Path;
-use data::{image_reader, label_reader, Image, Label};
+use data::{Image, Label, image_reader, label_reader};
 use model::Model;
+use std::path::Path;
 use train::train;
 
 const TRAIN_IMAGES: &str = "./mnist-dataset/train-images.idx3-ubyte";
@@ -22,7 +22,13 @@ fn main() {
     let train_images: Vec<Image> = image_reader(Path::new(TRAIN_IMAGES)).unwrap();
     let train_labels: Vec<Label> = label_reader(Path::new(TRAIN_LABELS)).unwrap();
 
-    let mut model = Model::new(&[28 * 28 , 128, 64, 10]);
+    let mut model = Model::new(&[28 * 28, 128, 64, 10]);
 
-    train(&mut model, train_images, train_labels, test_images, test_labels);
+    train(
+        &mut model,
+        train_images,
+        train_labels,
+        test_images,
+        test_labels,
+    );
 }

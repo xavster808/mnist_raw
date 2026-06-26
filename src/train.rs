@@ -1,13 +1,17 @@
 use super::{
-    model::{Model},
+    data::{Image, Label},
     lin_alg::*,
-    data::{Image, Label}
+    model::Model,
 };
 use rand::seq::SliceRandom;
 
-
-
-pub fn train(model: &mut Model, train_data: Vec<Image>, train_labels: Vec<Label>, test_data: Vec<Image>, test_labels: Vec<Label>) {
+pub fn train(
+    model: &mut Model,
+    train_data: Vec<Image>,
+    train_labels: Vec<Label>,
+    test_data: Vec<Image>,
+    test_labels: Vec<Label>,
+) {
     let learning_rate = 0.05;
     let batch_size = 100;
     let epochs = 100;
@@ -17,17 +21,9 @@ pub fn train(model: &mut Model, train_data: Vec<Image>, train_labels: Vec<Label>
     let mut best_acc: f32 = 0.0;
 
     // Convert to matrices
-    let train_data: Vec<Matrix> = train_data
-        .into_iter()
-        .map(|i| i.pixels.flatten())
-        .collect();
-    let train_labels: Vec<Matrix> = train_labels
-        .into_iter()
-        .map(|l| l.to_onehot()).collect();
-    let mut pairs: Vec<(Matrix, Matrix)> = train_data
-        .into_iter()
-        .zip(train_labels)
-        .collect();
+    let train_data: Vec<Matrix> = train_data.into_iter().map(|i| i.pixels.flatten()).collect();
+    let train_labels: Vec<Matrix> = train_labels.into_iter().map(|l| l.to_onehot()).collect();
+    let mut pairs: Vec<(Matrix, Matrix)> = train_data.into_iter().zip(train_labels).collect();
 
     for epoch in 0..epochs {
         println!("Starting epoch {}", epoch);
